@@ -1,8 +1,3 @@
-import { pipeline } from 'stream/promises';
-import axios from 'axios';
-import fs from 'fs';
-import plugin from '../../../lib/plugins/plugin.js';
-import { segment } from 'oicq';
 export class example extends plugin {
 	constructor() {
 		super({
@@ -17,66 +12,12 @@ export class example extends plugin {
 				},
                 {
 					reg: '^(#?)rvp随机视频$',
-					fnc: 'video'
+					fnc: 'Video'
 				},
-                {
-                    reg: '^#?rvp更新$',
-                    fnc: 'checkUpdate'
-                },
 			]
 		})
 	}
 
-// 新增更新方法
-async checkUpdate(e) {
-    try {
-        const docUrl = 'https://docs.qq.com/doc/DTHhXQUdKZXBTSnRs';
-        const { data } = await axios.get(docUrl);
-        
-        // 匹配 GitHub CDN 链接格式
-        const updateUrls = data.match(/https:\/\/cdn\.jsdelivr\.net\/gh\/\S+\.js/g);
-        
-        if (!updateUrls?.length) {
-            return e.reply("未找到有效更新链接");
-        }
-
-        const confirm = await e.confirm("发现GitHub更新源，是否立即升级？");
-        if (!confirm) return;
-
-        await e.reply("开始安全更新...");
-        const tempPath = `./Rvp_${Date.now()}.tmp`;
-        
-        // 创建写入流
-        const writer = fs.createWriteStream(tempPath);
-        const response = await axios({
-            url: updateUrls[0],
-            method: 'GET',
-            responseType: 'stream',
-            timeout: 30000
-        });
-
-        // 使用 pipeline 管理流
-        await pipeline(response.data, writer);
-        
-        // 验证文件有效性
-        const stats = fs.statSync(tempPath);
-        if (stats.size < 1024) {
-            fs.unlinkSync(tempPath);
-            throw new Error('文件大小异常，可能下载失败');
-        }
-
-        // 替换文件
-        fs.copyFileSync(tempPath, './Rvp.js');
-        fs.unlinkSync(tempPath);
-        
-        e.reply("更新成功！请重新加载插件");
-        
-    } catch (err) {
-        console.error('更新失败:', err);
-        if (fs.existsSync(tempPath)) fs.unlinkSync(tempPath);
-        e.reply(`更新失败：${err.message}`);
-    }
-}
 
 
 
@@ -175,7 +116,7 @@ async checkUpdate(e) {
         }
     }
 
-	async video(e) {
+	async Video(e) {
 		try {
 			const video_apis = [
 			    'http://api.yujn.cn/api/zzxjj.php',
@@ -198,6 +139,9 @@ async checkUpdate(e) {
                 'http://api.yujn.cn/api/qttj.php',
                 'http://api.yujn.cn/api/sqxl.php',
                 'https://api.yujn.cn/api/nvda.php?type=video',
+                'https://api.yviii.com/video/suiji.php',
+                'https://www.cunshao.com/666666/api/web.php',
+                ''
 			];
 
 			const randomIndex = Math.floor(Math.random() * video_apis.length);
